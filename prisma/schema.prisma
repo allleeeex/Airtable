@@ -14,27 +14,27 @@ datasource db {
     url      = env("DATABASE_URL")
 }
 
-model Post {
+model WorkSpace {
     id        Int      @id @default(autoincrement())
     name      String
     createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+    openedAt  DateTime
 
     createdBy   User   @relation(fields: [createdById], references: [id])
     createdById String
-
-    @@index([name])
+    bases     Base[]
 }
 
 model Base {
     id        Int      @id @default(autoincrement())
     name      String
     createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+    openedAt  DateTime
 
-    createdBy   User   @relation(fields: [createdById], references: [id])
-    createdById String
-    tables    Table[] 
+    createdBy   WorkSpace   @relation(fields: [createdById], references: [id])
+    createdById Int
+    tables    Table[]
+    SharedUsers User[]
 }
 
 model Table {
@@ -84,8 +84,8 @@ model User {
     image         String?
     accounts      Account[]
     sessions      Session[]
-    posts         Post[]
-    bases         Base[]
+    workspaces    WorkSpace[]
+    sharedBases   Base[]
 }
 
 model VerificationToken {

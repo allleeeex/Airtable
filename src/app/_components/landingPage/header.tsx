@@ -1,37 +1,52 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 
-export function LandingHeader() {
+export function LandingHeader() { 
 	const [scrolled, setScrolled] = useState(false);
+	const spanRef = useRef<HTMLSpanElement>(null);
+	const [textWidth, setTextWidth] = useState(0);
 
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 50);
+	// Measure width of airtable name
+	useEffect(() => {
+    if (spanRef.current) {
+      setTextWidth(spanRef.current.offsetWidth + 8);
+    }
+  }, []);
+	
+	// Detect scrolling
+	useEffect(() => {
+    const onScroll = () => {
+      setScrolled(window.scrollY > 0);
+    };
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+	
+	const width = scrolled ? 0 : 100;
+
+  const linksStyle = {
+    transform:  `translateX(${scrolled ? -textWidth : 0}px)`,
+  };
 
   return (
     <header
-      className={`
-        fixed top-0 left-0 w-full bg-white shadow-md z-50
-        transition-all duration-300
-        ${scrolled ? "backdrop-blur-md bg-opacity-70" : ""}
-      `}
-    >
+      className="fixed top-0 left-0 w-full bg-white shadow-md z-50">
       <div className="px-5 sm:px-10 w-full">
-        <nav className="flex h-16 items-center justify-between">
+        <nav className="relative flex h-16 items-center justify-between overflow-hidden">
 					<div className="flex space-x-10 items-center">
-						<Link href="/" className="flex space-x-2 items-center">
-							<img src="airtableLogo.png" className="h-8 justify-between"></img>
-							{
-								scrolled ? <></> : 
-									<span className="font-semibold text-2xl transition-all duration-300 origin-left">
-									Airtable
-								</span>
-								}
+						<Link href="/" className="flex space-x-2 items-center flex-shrink-0">
+							<img src="airtableLogo.png" className="h-8 justify-between" height={"100%"} width={"100%"}></img>
+							<span className="font-semibold text-2xl origin-left whitespace-nowrap overflow-hidden inline-block transition-all duration-400" 
+								ref={spanRef}
+								style={{
+									width: `${width}%`,
+								}}
+							>
+								Airtable
+							</span>
 						</Link>
-						<div className="hidden lg:flex space-x-6 items-center">
+						<div className="hidden lg:flex space-x-6 items-center transition-all duration-400 ease" style={linksStyle}>
 							<div className="font-sans font-medium text-x1 hover:text-blue-600 cursor-pointer">Platform</div>
 							<div className="font-sans font-medium text-x1 hover:text-blue-600 cursor-pointer">Solutions</div>
 							<div className="font-sans font-medium text-x1 hover:text-blue-600 cursor-pointer">Resources</div>
