@@ -1,10 +1,11 @@
+/* eslint-disable jsx-a11y/alt-text */
+/* eslint-disable @next/next/no-img-element */
 "use client";
-import Link from "next/link";
 
 export function LowerPage() {
     return (
         <div className="relative z-20 w-full items-center justify-center">
-            <img src="companies.png"></img>
+            <img src="companies.png"/>
         </div>
     )
 }

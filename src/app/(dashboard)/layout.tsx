@@ -49,7 +49,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps ) {
     return () => {
       mql.removeEventListener("change", onMediaChange);
     };
-  }, []);
+  }, [setSidebarOpened]);
 
   const wsQuery = api.workspace.list.useQuery();
   const basesQuery = api.base.listBase.useQuery();
