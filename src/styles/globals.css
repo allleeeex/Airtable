@@ -1,6 +1,19 @@
 @import "tailwindcss";
 
+@layer utilities {
+  .font-system {
+    font-family: -apple-system, system-ui, BlinkMacSystemFont,
+                 "Segoe UI", Roboto, "Oxygen-Sans", Ubuntu,
+                 Cantarell, "Helvetica Neue", sans-serif,
+                 "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  }
+  .font-home {
+    font-family: "Inter Display", -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"
+  }
+}
+
 @theme {
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif,
     "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
+

@@ -46,6 +46,9 @@ export const authConfig = {
       user: {
         ...session.user,
         id: user.id,
+        name: user.name ?? null,
+        email: user.email ?? null,
+        image: user.image ?? null,
       },
     }),
   },

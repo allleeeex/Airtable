@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
@@ -36,7 +37,7 @@ export function LandingHeader() {
         <nav className="relative flex h-16 items-center justify-between overflow-hidden">
 					<div className="flex space-x-10 items-center">
 						<Link href="/" className="flex space-x-2 items-center flex-shrink-0">
-							<img src="airtableLogo.png" className="h-8 justify-between" height={"100%"} width={"100%"}></img>
+							<img src="airtableLogo.png" className="h-8 justify-between" alt=""/>
 							<span className="font-semibold text-2xl origin-left whitespace-nowrap overflow-hidden inline-block transition-all duration-400" 
 								ref={spanRef}
 								style={{
