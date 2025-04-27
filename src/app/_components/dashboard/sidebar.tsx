@@ -7,12 +7,14 @@ import { api } from "~/trpc/react";
 import { nanoid } from "nanoid";
 import { useDataStore } from "~/stores/workspacesStore";
 import { CreateBaseSelectorModal } from "../dashboard/createModal";
+import type { Session } from "next-auth";
 
 interface DashboardSlimSidebarProps {
+  user: Session["user"];
   sidebarOpened: boolean;
 }
 
-export function DashboardSlimSidebar({ sidebarOpened }: DashboardSlimSidebarProps ) {
+export function DashboardSlimSidebar({ user, sidebarOpened }: DashboardSlimSidebarProps ) {
   const router = useRouter(); 
   const items = useDataStore((s) => s.items);
   const alphabetical = useMemo(() => {
@@ -58,6 +60,14 @@ export function DashboardSlimSidebar({ sidebarOpened }: DashboardSlimSidebarProp
         openedAt: now,
         starred: false,
         createdById: "me",
+        createdBy: {
+          name: user.name!,
+          id: user.id,
+          email: user.email!,
+          image: user.image!,
+        },
+        sharedUsers: [],
+        pendingUsers: [],
       });
       return { tempId: vars.id };
     },
@@ -87,6 +97,7 @@ export function DashboardSlimSidebar({ sidebarOpened }: DashboardSlimSidebarProp
       return { prev };
     },
     onError: (_err, { id }, ctx) => {
+      console.log(id);
       if (ctx?.prev) useDataStore.getState().updateWorkspace(ctx.prev);
     },
     onSuccess(updated) {
@@ -182,7 +193,7 @@ export function DashboardSlimSidebar({ sidebarOpened }: DashboardSlimSidebarProp
                   {starred.map((ws) => (
                     <div 
                       key={ws.id} 
-                      className="flex items-center justify-between hover:bg-gray-100 rounded-md px-3 w-full"
+                      className="flex items-center justify-between hover:bg-gray-100 rounded-md px-3 w-full cursor-pointer"
                       onMouseEnter={() => handleMouseEnter(ws.id)}
                       onMouseLeave={handleMouseLeave}
                       onClick={() => {
@@ -267,7 +278,7 @@ export function DashboardSlimSidebar({ sidebarOpened }: DashboardSlimSidebarProp
                 {alphabetical.map((ws) => (
                   <div 
                     key={ws.id} 
-                    className="flex items-center justify-between hover:bg-gray-100 rounded-md px-3 w-full"
+                    className="flex items-center justify-between hover:bg-gray-100 rounded-md px-3 w-full cursor-pointer"
                     onMouseEnter={() => handleMouseEnter(ws.id)}
                     onMouseLeave={handleMouseLeave}
                     onClick={() => {

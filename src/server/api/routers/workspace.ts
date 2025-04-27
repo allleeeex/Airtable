@@ -67,6 +67,11 @@ export const workspaceRouter = createTRPCRouter({
     return ctx.db.workSpace.findMany({
       where: { createdBy: { id: ctx.session.user.id } },
       orderBy: { createdAt: "desc" },
+      include: {
+        createdBy: true,
+        sharedUsers: true,
+        pendingUsers: true,
+      }
     });
   }),
 

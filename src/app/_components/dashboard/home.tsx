@@ -96,10 +96,24 @@ export function DashboardBody() {
           </div>
         </div>
         <div className="fixed top-42.5 [right:clamp(1.75rem,5vw,3rem)] flex items-center">
-          <button onClick={() => setShowList(!showList)} className={`p-1 rounded-full hover:text-black cursor-pointer ${showList ? "bg-gray-200 text-black" : "text-gray-500"}`}>
+          <button 
+            onClick={() => {
+              if (!showList) {
+                setShowList(!showList)
+              }
+            }} 
+            className={`p-1 rounded-full hover:text-black cursor-pointer ${showList ? "bg-gray-200 text-black" : "text-gray-500"}`}
+          >
             <Icon id="List" className="h-5 w-5"/>
           </button>
-          <button onClick={() => setShowList(!showList)} className={`p-1 rounded-full hover:text-black cursor-pointer ${showList ? "text-gray-500" : "bg-gray-200 text-black"}`}>
+          <button 
+            onClick={() => {
+              if (showList) {
+                setShowList(!showList)
+              }
+            }}  
+            className={`p-1 rounded-full hover:text-black cursor-pointer ${showList ? "text-gray-500" : "bg-gray-200 text-black"}`}
+          >
             <Icon id="GridFour" className="h-5 w-5"/>
           </button>
           </div>

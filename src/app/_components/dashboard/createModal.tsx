@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/unbound-method */
 import type { WorkSpace } from "@prisma/client";
 import { useState } from "react";
 
@@ -13,11 +14,11 @@ export function CreateBaseSelectorModal({
   onCreate,
 }: CreateBaseSelectorModalProps) {
   const [chosen, setChosen] = useState<string>(
-    workspaces.length > 0 ? workspaces[0].id : ""
+    workspaces.length > 0 ? workspaces[0]!.id : ""
   );
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+    <div className="w-full h-screen flex-1 fixed inset-0 z-50 flex items-center justify-center bg-black/50">
       <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-sm relative">
         <h2 className="text-lg font-semibold mb-4">Create a new base</h2>
 

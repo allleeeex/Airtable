@@ -24,28 +24,30 @@ model WorkSpace {
     createdBy     User        @relation("UserCreatedWorkspaces", fields: [createdById], references: [id])
     createdById   String
     sharedUsers   User[]      @relation("WorkspaceSharedUsers")
+    pendingUsers  User[]      @relation("WorkpacePendingUsers")
 
     starred   Boolean  @default(false)
     bases     Base[]
 }
 
 model Base {
-  id          String      @id @default(cuid())
-  name        String
-  createdAt   DateTime    @default(now())
-  openedAt    DateTime
-  starred     Boolean     @default(false)
+    id          String      @id @default(cuid())
+    name        String
+    createdAt   DateTime    @default(now())
+    openedAt    DateTime
+    starred     Boolean     @default(false)
 
-  workspace     WorkSpace  @relation(fields: [workspaceId], references: [id])
-  workspaceId   String
-  createdBy     User        @relation("UserCreatedBases", fields: [createdById], references: [id])
-  createdById   String
-  sharedUsers   User[]      @relation("BaseSharedUsers")
+    workspace     WorkSpace  @relation(fields: [workspaceId], references: [id])
+    workspaceId   String
+    createdBy     User        @relation("UserCreatedBases", fields: [createdById], references: [id])
+    createdById   String
+    sharedUsers   User[]      @relation("BaseSharedUsers")
+    pendingUsers  User[]      @relation("BasePendingUsers")
 
-  tables        Table[]
+    tables        Table[]
 
-  @@index([workspaceId])
-  @@index([createdById])
+    @@index([workspaceId])
+    @@index([createdById])
 }
 model Table {
     id        String     @id @default(cuid())
@@ -90,7 +92,6 @@ model User {
     id            String    @id @default(cuid())
     name          String?
     email         String?   @unique
-    emailVerified DateTime?
     image         String?
     accounts      Account[]
     sessions      Session[]
@@ -98,6 +99,8 @@ model User {
     sharedWorkspaces     WorkSpace[] @relation("WorkspaceSharedUsers")
     createdBases  Base[]   @relation("UserCreatedBases")
     sharedBases   Base[]   @relation("BaseSharedUsers")
+    pendingWorkspaces  WorkSpace[]      @relation("WorkpacePendingUsers")
+    pendingBases  Base[]      @relation("BasePendingUsers")
 }
 
 model VerificationToken {

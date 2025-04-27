@@ -1,22 +1,23 @@
 import { create } from "zustand";
-import type { WorkSpace, Base } from "@prisma/client";
+import type { Base } from "@prisma/client";
+import type { WorkSpaceWithRelations } from "~/app/helper/types";
 import type { WorkspaceSortKey } from "./workspaceSort";
 import { SORT_OPTIONS } from "./workspaceSort";
 
 interface DataState {
   // workspaces
-  items: WorkSpace[];
-  byId: Record<string, WorkSpace>;
+  items: WorkSpaceWithRelations[];
+  byId: Record<string, WorkSpaceWithRelations>;
   sortKey: WorkspaceSortKey;
   setSortKey: (k: WorkspaceSortKey) => void;
-  readonly sorted: WorkSpace[];
-  readonly alphabetical: WorkSpace[];
-  setWorkspaces: (list: WorkSpace[]) => void;
-  addWorkspace:  (w: WorkSpace) => void;
-  updateWorkspace: (w: WorkSpace) => void;
+  readonly sorted: WorkSpaceWithRelations[];
+  readonly alphabetical: WorkSpaceWithRelations[];
+  setWorkspaces: (list: WorkSpaceWithRelations[]) => void;
+  addWorkspace:  (w: WorkSpaceWithRelations) => void;
+  updateWorkspace: (patch: { id: string } & Partial<WorkSpaceWithRelations>) => void;
   removeWorkspace: (id: string) => void;
   getNextName: (base: string) => string;
-  getWorkspaceById: (id: string) => WorkSpace | null;
+  getWorkspaceById: (id: string) => WorkSpaceWithRelations | null;
 
   // bases
   bases: Base[];
@@ -46,11 +47,16 @@ export const useDataStore = create<DataState>((set, get) => ({
     set({ items, byId: Object.fromEntries(items.map(w=>[w.id,w])) }),
   addWorkspace: (w) =>
     set(s=>({ items:[...s.items,w], byId:{...s.byId,[w.id]:w} })),
-  updateWorkspace: (w) =>
-    set(s=>({
-      items: s.items.map(x=>x.id===w.id?w:x),
-      byId: {...s.byId,[w.id]:w}
-    })),
+  updateWorkspace: (patch: Partial<WorkSpaceWithRelations> & { id: string }) =>
+    set(s => {
+      const existing = s.byId[patch.id];
+      if (!existing) return {};
+      const merged = { ...existing, ...patch };
+      return {
+        items: s.items.map(w => w.id === patch.id ? merged : w),
+        byId:   { ...s.byId, [patch.id]: merged },
+      };
+    }),
   removeWorkspace: (id) =>
     set(s=>{
       const { [id]:_,...rest } = s.byId;

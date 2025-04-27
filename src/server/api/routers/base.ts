@@ -36,6 +36,9 @@ export const baseRouter = createTRPCRouter({
           workspaceId: input?.workspaceId ?? undefined,
         },
         orderBy: { createdAt: "desc" },
+        include: {
+          sharedUsers: true,
+        }
       });
     }),
 
