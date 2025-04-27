@@ -1,6 +1,6 @@
 "use client";
 import DashboardLayout from "~/app/(dashboard)/layout";
-import { DashboardBody } from "../_components/dashboard/home";
+import { DashboardBody } from "./dashboard/home";
 
 export function DashboardPage() {
   return (
