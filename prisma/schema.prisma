@@ -31,33 +31,79 @@ model WorkSpace {
 }
 
 model Base {
-    id          String      @id @default(cuid())
-    name        String
-    createdAt   DateTime    @default(now())
-    openedAt    DateTime
-    starred     Boolean     @default(false)
+  id                  String    @id @default(cuid())
+  name                String
+  createdAt           DateTime  @default(now())
+  openedAt            DateTime
+  starred             Boolean   @default(false)
 
-    workspace     WorkSpace  @relation(fields: [workspaceId], references: [id])
-    workspaceId   String
-    createdBy     User        @relation("UserCreatedBases", fields: [createdById], references: [id])
-    createdById   String
-    sharedUsers   User[]      @relation("BaseSharedUsers")
-    pendingUsers  User[]      @relation("BasePendingUsers")
+  workspace           WorkSpace @relation(fields: [workspaceId], references: [id])
+  workspaceId         String
 
-    tables        Table[]
+  createdBy           User      @relation("UserCreatedBases", fields: [createdById], references: [id])
+  createdById         String
 
-    @@index([workspaceId])
-    @@index([createdById])
+  sharedUsers         User[]    @relation("BaseSharedUsers")
+  pendingUsers        User[]    @relation("BasePendingUsers")
+
+  tables              Table[]   @relation("BaseTables")
+  lastSelectedTableId   String?
+
+  @@index([workspaceId])
+  @@index([createdById])
 }
-model Table {
-    id        String     @id @default(cuid())
-    name      String
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
 
-    createdBase   Base   @relation(fields: [baseId], references: [id])
-    baseId    String
-    createdById String
+model Table {
+  id               String    @id @default(cuid())
+  name             String
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  base             Base      @relation("BaseTables", fields: [baseId], references: [id])
+  baseId           String
+
+  fields           Field[]
+  records          Record[]
+}
+
+model Field {
+  id        String    @id @default(cuid())
+  name      String
+  type      String 
+  options   Json? 
+  order     String
+
+  table     Table     @relation(fields: [tableId], references: [id])
+  tableId   String
+
+  cells     Cell[]
+}
+
+/// A “row”/record in a Table
+model Record {
+  id         String     @id @default(cuid())
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  order      String
+
+  table      Table      @relation(fields: [tableId], references: [id])
+  tableId    String
+
+  cells      Cell[]
+}
+
+
+model Cell {
+  id        String    @id @default(cuid())
+  value     Json
+
+  record    Record    @relation(fields: [recordId], references: [id])
+  recordId  String
+
+  field     Field     @relation(fields: [fieldId], references: [id])
+  fieldId   String
+
+  @@unique([recordId, fieldId]) 
 }
 
 // Necessary for Next auth
@@ -92,6 +138,7 @@ model User {
     id            String    @id @default(cuid())
     name          String?
     email         String?   @unique
+    emailVerified DateTime?
     image         String?
     accounts      Account[]
     sessions      Session[]

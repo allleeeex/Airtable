@@ -5,13 +5,11 @@ import { useEffect, useRef, useState, useMemo } from "react";
 import { useDataStore } from "~/stores/workspacesStore";
 import { api } from "~/trpc/react";
 import { useSession } from "next-auth/react";
-import { stringToHslColor } from "~/app/helper/stringToColour";
-import { useRouter } from "next/navigation";
-import { CreateBaseSelectorModal } from "../createModal";
-import { useUIStore } from "~/stores/sidebarOpenStore";
+import { stringToRGBColour } from "~/app/helper/stringToColour";
+import { useUIStore } from "~/stores/uiStore";
+import { DashboardBodyList } from "../dashList";
 
 export default function WorkspaceDetailPage() {
-  const router = useRouter(); 
   const sidebarOpened = useUIStore((s) => s.sidebarOpened);
   const { data: session } = useSession();
   const myUserId = session?.user.id;
@@ -24,29 +22,16 @@ export default function WorkspaceDetailPage() {
   );
   const [choice1, setChoice1] = useState("Opened by you");
   const [choice2, setChoice2] = useState("Show all types");
-  const [showList, setShowList] = useState(false);
+  const [showList, setShowList] = useState(true);
   const options1 = ["Opened by you", "Shared with you", "Starred"];
   const options2 = ["Show all types", "Show bases only", "Show interfaces only"];
   const [open1, setOpen1] = useState(false);
   const [open2, setOpen2] = useState(false);
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const items = useDataStore((s) => s.items);
-  const alphabetical = useMemo(() => {
-    const pattern = /^(.+?)(?: (\d+))?$/;
-  
-    return [...items].sort((a, b) => {
-      const ma = pattern.exec(a.name);
-      const mb = pattern.exec(b.name);
-  
-      if (ma && mb && ma[1] === mb[1]) {
-        const na = ma[2] ? parseInt(ma[2], 10) : 0;
-        const nb = mb[2] ? parseInt(mb[2], 10) : 0;
-        return na - nb;
-      }
+  const openCreateBaseModal = useUIStore((s) => s.openCreateBaseModal);
 
-      return a.name.localeCompare(b.name);
-    });
-  }, [items]);
+  console.log(id);
+  console.log("STORE IN detail page:", useDataStore.getState().items);
+  console.log(workspace);
 
   const participants = useMemo(() => {
     const all = [workspace.createdBy, ...workspace.sharedUsers];
@@ -93,7 +78,6 @@ export default function WorkspaceDetailPage() {
       return { prev };
     },
     onError: (_err, { id }, ctx) => {
-      console.log(id);
       if (ctx?.prev) useDataStore.getState().updateWorkspace(ctx.prev);
     },
     onSuccess(updated) {
@@ -103,20 +87,6 @@ export default function WorkspaceDetailPage() {
     
   const handleStar = (id: string) => {
     toggleStar.mutate({ id });
-  };
- 
-  const createBase = api.base.createBase.useMutation({
-    onSuccess(newBase) {
-      useDataStore.getState().addBase(newBase);
-      setShowCreateModal(false);
-      router.push(`/app${newBase.id}`);
-    },
-  });
-
-  const handleCreate = (workspaceId: string) => {
-    createBase.mutate({
-      workspaceId,
-    });
   };
 
   return(
@@ -148,7 +118,7 @@ export default function WorkspaceDetailPage() {
           </div>
         </div>
         {/* sorting bar idk */}
-        <div className="w-full mt-7 max-w-317 flex items-center justify-between min-w-117 text-[15px] font-system right-0 overflow-auto">
+        <div className="w-full mt-7 max-w-317 flex items-center justify-between min-w-117 text-[15px] font-system right-0">
           <div className="flex space-x-3">
             <div ref={ref1} className="relative">
               <button onClick={() => setOpen1(!open1)} className="flex items-center space-x-1 text-gray-600 cursor-pointer hover:text-black">
@@ -225,25 +195,41 @@ export default function WorkspaceDetailPage() {
             </div>
         </div>
         <div className="pl-1 pr-3 flex h-87/100 w-full">
-          <div className="flex-1 flex flex-col w-full items-center justify-center">
             {bases.length === 0 ? (
-              <div className="font-system flex flex-col w-full items-center justify-center">
+              <div className="flex-1 font-system flex flex-col w-full items-center justify-center">
                 <span className="text-[21.5px] font-normal">This workspace is empty</span>
                 <span className="text-[13px] font-normal text-gray-500">Bases and interfaces in this workspace will appear here.</span>
                 <div className="flex items-center justify-center p-8">
-                  <button onClick={() => setShowCreateModal(true)} className="py-1 px-2 border-1 border-gray-300 rounded-md bg-white hover:cursor-pointer hover:ring-2 hover:ring-gray-300/20">Create</button>
+                  <button onClick={() => openCreateBaseModal(workspace.id)} className="py-1 px-2 border-1 border-gray-300 rounded-md bg-white hover:cursor-pointer hover:ring-2 hover:ring-gray-300/20">Create</button>
                 </div>
               </div>
             ) : showList ? (
-              <div>ree</div>
+              <div className={`flex-1 overflow-y-auto ${sidebarOpened ? "max-w-390" : "max-w-390"}`}>
+                <DashboardBodyList workspaceList={[]} baseList={bases} filterType1={choice1} filterType2={choice2} openedAtDash={false}/>
+              </div>
             ) : (
               <div>brr</div>
             )}
-          </div>
         </div>
       </div>
       <div className="pl-15.5 flex flex-col min-w-70 space-y-8">
-        <div className="flex w-full items-center justify-end space-x-2 flex-shrink-0">
+        {bases.length === 0 ?
+          <div className="flex w-full items-center justify-end space-x-2 flex-shrink-0">
+            <button className="font-system text-[13px] bg-white py-1.5 px-3 border-1 border-gray-300 rounded-lg cursor-pointer shadow-xs hover:shadow-sm">
+              Share
+            </button>
+            <button className="bg-white py-2 px-3 border-1 border-gray-300 rounded-lg cursor-pointer shadow-xs hover:shadow-sm">
+              <Icon id="DotsThree" className="h-4 w-4"/>
+            </button>
+          </div>
+        : 
+        <div className="flex w-full items-center justify-start space-x-2 flex-shrink-0">
+          <button 
+            onClick={() => openCreateBaseModal(workspace.id)}
+            className="font-system font-medium text-[13px] bg-blue-600 text-white py-1.5 px-3 border-1 border-gray-300 rounded-lg cursor-pointer shadow-xs hover:shadow-sm"
+          >
+            Create
+          </button>
           <button className="font-system text-[13px] bg-white py-1.5 px-3 border-1 border-gray-300 rounded-lg cursor-pointer shadow-xs hover:shadow-sm">
             Share
           </button>
@@ -251,13 +237,14 @@ export default function WorkspaceDetailPage() {
             <Icon id="DotsThree" className="h-4 w-4"/>
           </button>
         </div>
+        }
         <div className="flex flex-col space-y-3">
           <span className="font-system text-[15px] font-semibold">Collaborators</span>
           <div className="flex flex-col">
             {
               participants.map(user => (
                 <div key={user.id} className="flex items-center space-x-2 text-gray-500 font-system text-[13px]">
-                  <div className="flex items-center text-black justify-center rounded-full font-light text-[13px]	h-6 w-6" style={{ background:stringToHslColor(user.name!) }}>
+                  <div className="flex items-center text-black justify-center rounded-full font-light text-[13px]	h-6 w-6" style={{ background:stringToRGBColour(user.name!) }}>
                     <div>{user.name?.charAt(0).toUpperCase()}</div>
                   </div>
                   <span>
@@ -280,13 +267,6 @@ export default function WorkspaceDetailPage() {
           </div>
         </div>
       </div>
-      {showCreateModal && (
-        <CreateBaseSelectorModal
-          workspaces={alphabetical}
-          onClose={() => setShowCreateModal(false)}
-          onCreate={handleCreate}
-        />
-      )}
     </div>
   )
 }

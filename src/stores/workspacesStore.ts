@@ -1,6 +1,6 @@
 import { create } from "zustand";
-import type { Base } from "@prisma/client";
-import type { WorkSpaceWithRelations } from "~/app/helper/types";
+
+import type { WorkSpaceWithRelations, BaseWithRelations } from "~/app/helper/types";
 import type { WorkspaceSortKey } from "./workspaceSort";
 import { SORT_OPTIONS } from "./workspaceSort";
 
@@ -10,6 +10,7 @@ interface DataState {
   byId: Record<string, WorkSpaceWithRelations>;
   sortKey: WorkspaceSortKey;
   setSortKey: (k: WorkspaceSortKey) => void;
+  getWorkspaces: () => WorkSpaceWithRelations[];
   readonly sorted: WorkSpaceWithRelations[];
   readonly alphabetical: WorkSpaceWithRelations[];
   setWorkspaces: (list: WorkSpaceWithRelations[]) => void;
@@ -20,15 +21,17 @@ interface DataState {
   getWorkspaceById: (id: string) => WorkSpaceWithRelations | null;
 
   // bases
-  bases: Base[];
-  byBaseId: Record<string, Base>;
-  setBases: (list: Base[]) => void;
-  addBase:  (b: Base) => void;
-  updateBase:(b: Base) => void;
+  bases: BaseWithRelations[];
+  byBaseId: Record<string, BaseWithRelations>;
+  setBases: (list: BaseWithRelations[]) => void;
+  addBase:  (b: BaseWithRelations) => void;
+  updateBase:(b: BaseWithRelations) => void;
   removeBase:(id: string) => void;
+  getBases: () => BaseWithRelations[];
 
   // selectors
-  getBasesByWorkspace: (wsId: string) => Base[];
+  getBasesByWorkspace: (wsId: string) => BaseWithRelations[];
+  getBaseById: (id: string) => BaseWithRelations | null;
 }
 
 export const useDataStore = create<DataState>((set, get) => ({
@@ -36,6 +39,7 @@ export const useDataStore = create<DataState>((set, get) => ({
   items: [], byId: {},
   sortKey: "NAME_ASC",
   setSortKey: (sortKey) => set({ sortKey }),
+  getWorkspaces: () => get().items,
   get sorted() {
     const { items, sortKey } = get();
     return [...items].sort(SORT_OPTIONS[sortKey].comparator);
@@ -90,8 +94,10 @@ export const useDataStore = create<DataState>((set, get) => ({
       const { [id]:_,...rest } = s.byBaseId;
       return { bases:s.bases.filter(b=>b.id!==id), byBaseId:rest };
     }),
+  getBases: () => get().bases,
 
   // Selector: get bases for a workspace
   getBasesByWorkspace: wsId =>
     get().bases.filter(b=>b.workspaceId === wsId),
+  getBaseById: (id) => get().byBaseId[id] ?? null,
 }));

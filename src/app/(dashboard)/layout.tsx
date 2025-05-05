@@ -4,8 +4,9 @@ import { DashBoardHeader } from "../_components/dashboard/header";
 import { DashboardSlimSidebar } from "../_components/dashboard/sidebar";
 import { api } from "~/trpc/react";
 import { useDataStore } from "~/stores/workspacesStore";
-import { useUIStore } from "~/stores/sidebarOpenStore";
+import { useUIStore } from "~/stores/uiStore";
 import { useSession } from "next-auth/react";
+import { CreateBaseSelectorModal } from "../_components/dashboard/createModal";
 
 interface DashboardLayoutProps {
   children: ReactNode
@@ -56,11 +57,14 @@ export default function DashboardLayout({ children }: DashboardLayoutProps ) {
   const [hydrated, setHydrated] = useState(false);
   const setWorkspaces = useDataStore((s) => s.setWorkspaces);
   const setBases = useDataStore((s) => s.setBases);
+  const { createBaseModal } = useUIStore();
+  const items = useDataStore((s) => s.items);
 
   useEffect(() => {
     if (
       !hydrated &&
       wsQuery.data &&
+      items.length === 0 &&
       !wsQuery.isLoading &&
       basesQuery.data &&
       !basesQuery.isLoading
@@ -77,11 +81,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps ) {
     basesQuery.isLoading,
     setWorkspaces,
     setBases,
+    items,
   ]);
   if (status === "loading" || !session) {
     return null;
   }
-  if (!hydrated) {
+  if (!hydrated && items.length === 0) {
     return <div></div>;
   }
 
@@ -96,6 +101,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps ) {
       </div>
 
       <DashBoardHeader user={session.user} sidebarOpened={sidebarOpened} setSidebarOpened={toggleSidebar} />
+      {createBaseModal.isOpen && (
+        <CreateBaseSelectorModal />
+      )}
     </div>
   );
 }

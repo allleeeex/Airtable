@@ -5,7 +5,7 @@ import React from "react";
 import { SearchModal } from "./searchBar";
 import { type Session } from "next-auth";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
-import { stringToHslColor } from "~/app/helper/stringToColour";
+import { stringToRGBColour } from "~/app/helper/stringToColour";
 
 interface DashBoardHeaderProps {
   user: Session["user"];
@@ -14,7 +14,7 @@ interface DashBoardHeaderProps {
 }
 
 export function DashBoardHeader({ user, sidebarOpened, setSidebarOpened }: DashBoardHeaderProps) {
-	const avatarCol = stringToHslColor(user.name!);
+	const avatarCol = stringToRGBColour(user.name!);
 
   return (
 		<>

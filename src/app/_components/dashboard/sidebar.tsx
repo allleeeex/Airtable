@@ -6,8 +6,8 @@ import { ChevronRightIcon } from "@heroicons/react/24/solid";
 import { api } from "~/trpc/react";
 import { nanoid } from "nanoid";
 import { useDataStore } from "~/stores/workspacesStore";
-import { CreateBaseSelectorModal } from "../dashboard/createModal";
 import type { Session } from "next-auth";
+import { useUIStore } from "~/stores/uiStore";
 
 interface DashboardSlimSidebarProps {
   user: Session["user"];
@@ -43,15 +43,15 @@ export function DashboardSlimSidebar({ user, sidebarOpened }: DashboardSlimSideb
   const [workspaceOpen, setWorkspaceOpen] = useState(false);
   const [addHovered, setAddHovered] = useState(false);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
-  const [showCreateModal, setShowCreateModal] = useState(false);
   const handleMouseEnter = (id: string) => setHoveredId(id);
   const handleMouseLeave = () => setHoveredId(null);
   const openMutation = api.workspace.open.useMutation();
+  const openCreateBaseModal = useUIStore((s) => s.openCreateBaseModal);
 
   const createWorkspace = api.workspace.create.useMutation({
     onMutate: (vars) => {
       const now = new Date();
-      router.push(`/workspaces/${vars.id}`);
+      console.log("Added workspace");
       useDataStore.getState().addWorkspace({
         id: vars.id,
         name: vars.baseName,
@@ -59,7 +59,7 @@ export function DashboardSlimSidebar({ user, sidebarOpened }: DashboardSlimSideb
         createdAt: now, 
         openedAt: now,
         starred: false,
-        createdById: "me",
+        createdById: user.id,
         createdBy: {
           name: user.name!,
           id: user.id,
@@ -69,6 +69,7 @@ export function DashboardSlimSidebar({ user, sidebarOpened }: DashboardSlimSideb
         sharedUsers: [],
         pendingUsers: [],
       });
+      router.push(`/workspaces/${vars.id}`);
       return { tempId: vars.id };
     },
     
@@ -97,7 +98,6 @@ export function DashboardSlimSidebar({ user, sidebarOpened }: DashboardSlimSideb
       return { prev };
     },
     onError: (_err, { id }, ctx) => {
-      console.log(id);
       if (ctx?.prev) useDataStore.getState().updateWorkspace(ctx.prev);
     },
     onSuccess(updated) {
@@ -109,20 +109,6 @@ export function DashboardSlimSidebar({ user, sidebarOpened }: DashboardSlimSideb
     toggleStar.mutate({ id });
   };
 
-  const createBase = api.base.createBase.useMutation({
-    onSuccess(newBase) {
-      useDataStore.getState().addBase(newBase);
-      setShowCreateModal(false);
-      router.push(`/app${newBase.id}`);
-    },
-  });
-
-  const handleCreate = (workspaceId: string) => {
-    createBase.mutate({
-      workspaceId,
-    });
-  };
-  
   return (
     <div className={`relative group left-0 h-screen ${sidebarOpened ? "w-75" : "w-12"} overflow-auto`}>
       { /* The Slim Bar for Hover Trigger */ }
@@ -157,10 +143,14 @@ export function DashboardSlimSidebar({ user, sidebarOpened }: DashboardSlimSideb
         <div className="flex flex-col h-full pb-3">
           <div className="h-full p-3 flex flex-col space-y-1">
             { /* Home Button */}
-            <div className="flex items-center space-x-3 hover:bg-gray-100 cursor-pointer px-3 py-2 rounded-md justify-between pr-2">
+            <div 
+              className="flex items-center space-x-3 hover:bg-gray-100 cursor-pointer px-3 py-2 rounded-md justify-between pr-2"
+              onClick={() => router.push("/")}
+            >
               <span className="text-gray-900 text-[15px] font-medium">Home</span>
               <button
-                onClick={() => {
+                onClick={(e) => {
+                  e.stopPropagation();
                   setHomeOpen((v) => {
                     const next = !v;
                     if (next) setWorkspaceOpen(false)
@@ -247,7 +237,7 @@ export function DashboardSlimSidebar({ user, sidebarOpened }: DashboardSlimSideb
                   onMouseLeave={() => setAddHovered(false)}
                   className="relative hover:bg-gray-200 p-1.5 rounded-md transition peer"
                 >
-                  <span className={`absolute left-1/2 mb-1 -translate-x-1/2 translate-y-6.5 bg-gray-800 text-white text-[0.65rem] rounded px-2 py-1 whitespace-nowrap overflow-hidden max-w-fit transition-opacity duration-150 ease-out pointer-events-none ${addHovered ? "opacity-100" : "opacity-0"}`}>
+                  <span className={`z-50 absolute left-1/2 mb-1 -translate-x-1/2 translate-y-6.5 bg-gray-800 text-white text-[0.65rem] rounded px-2 py-1 whitespace-nowrap overflow-hidden max-w-fit transition-opacity duration-150 ease-out pointer-events-none ${addHovered ? "opacity-100" : "opacity-0"}`}>
                     Create workspace
                   </span>
                   <Icon id="Plus" className={`w-4 h-4 text-black`} />
@@ -265,7 +255,7 @@ export function DashboardSlimSidebar({ user, sidebarOpened }: DashboardSlimSideb
                   onMouseLeave={() => setWorkspaceHovered(false)}
                   className="relative hover:bg-gray-200 p-1.5 rounded-md transition peer"
                 >
-                  <span className={`absolute left-1/2 mb-1 -translate-x-1/2 translate-y-6 bg-gray-800 text-white text-[0.65rem] rounded px-2 py-1 whitespace-nowrap overflow-hidden max-w-fit transition-opacity duration-150 ease-out pointer-events-none ${workspaceHovered ? "opacity-100" : "opacity-0"}`}>
+                  <span className={`z-50 absolute left-1/2 mb-1 -translate-x-1/2 translate-y-6 bg-gray-800 text-white text-[0.65rem] rounded px-2 py-1 whitespace-nowrap overflow-hidden max-w-fit transition-opacity duration-150 ease-out pointer-events-none ${workspaceHovered ? "opacity-100" : "opacity-0"}`}>
                     {workspaceOpen ? "Collapse workspaces" : "Expand workspaces"}
                   </span>
                   <ChevronRightIcon className={`w-3 h-3 text-black transform transition-transform duration-200 ${workspaceOpen ? "rotate-90" : "rotate-0"}`} />
@@ -337,20 +327,13 @@ export function DashboardSlimSidebar({ user, sidebarOpened }: DashboardSlimSideb
                 <span>Import</span>
               </button>
             </div>
-            <button onClick={() => setShowCreateModal(true)} className="flex items-center justify-center space-x-2 bg-blue-600 text-white w-full text-[13px] font-semibold py-1.5 rounded-md cursor-pointer font-system">
+            <button onClick={() => openCreateBaseModal("")} className="flex items-center justify-center space-x-2 bg-blue-600 text-white w-full text-[13px] font-semibold py-1.5 rounded-md cursor-pointer font-system">
               <Icon id="Plus" className="h-4 w-4"/>
               <div>Create</div>
             </button>
           </div>
         </div>
       </div>
-      {showCreateModal && (
-        <CreateBaseSelectorModal
-          workspaces={alphabetical}
-          onClose={() => setShowCreateModal(false)}
-          onCreate={handleCreate}
-        />
-      )}
     </div>
   );
 }

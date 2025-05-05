@@ -1,16 +1,21 @@
 "use client"
 import { Icon } from "../icon";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import { DashboardBodyList } from "./dashList";
+import { useDataStore } from "~/stores/workspacesStore";
+import { useUIStore } from "~/stores/uiStore";
 
 export function DashboardBody() {
+  const sidebarOpened = useUIStore((s) => s.sidebarOpened);
   const [choice1, setChoice1] = useState("Opened by you");
   const [choice2, setChoice2] = useState("Show all types");
-  const [showList, setShowList] = useState(false);
+  const [showList, setShowList] = useState(true);
   const options1 = ["Opened by you", "Shared with you", "Starred"];
   const options2 = ["Show all types", "Show bases only", "Show interfaces only"];
   const [open1, setOpen1] = useState(false);
   const [open2, setOpen2] = useState(false);
+  const workspaces = useDataStore((s) => s.items);
+  const allBases = useDataStore((s) => s.bases);
 
   const ref1 = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -119,8 +124,8 @@ export function DashboardBody() {
           </div>
       </div>
       {showList ? 
-        <div className="flex-1">
-          <DashboardBodyList />
+        <div className={`${sidebarOpened ? "max-w-327" : "max-w-390" } overflow-y-auto`}>
+          <DashboardBodyList workspaceList={workspaces} baseList={allBases} filterType1={choice1} filterType2={choice2} openedAtDash={true}/>
         </div>
       :
         <div>
