@@ -64,6 +64,7 @@ export function DashboardSlimSidebar({ user, sidebarOpened }: DashboardSlimSideb
           name: user.name!,
           id: user.id,
           email: user.email!,
+          emailVerified: new Date(),
           image: user.image!,
         },
         sharedUsers: [],
